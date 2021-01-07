@@ -3,9 +3,17 @@ import os
 import sys
 import pygame
 import random
+
 FPS = 144
 WIDTH = 998
 HEIGHT = 1200
+
+
+def print_text(message, x, y, font_color=(0, 0, 0), font_type='Impact.ttf', font_size=80):
+    font_type = pygame.font.Font(font_type, font_size)
+    text = font_type.render(message, True, font_color)
+    screen.blit(text, (x, y))
+
 
 def terminate():
     pygame.quit()
@@ -13,21 +21,34 @@ def terminate():
 
 
 def start_screen():
-
-
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
+    width = 376
+    height = 113
 
     while True:
+        button = Button(376, 113)
+        button.draw(300, 395, game)
+
+        button2 = Button2(376, 113)
+        button2.draw(300, 620)
+
+        button3 = Button3(376, 113)
+        button3.draw(300, 879)
+        mouse = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
                 return  # начинаем игру
+            if event.type == pygame.MOUSEBUTTONDOWN and \
+                    (300 <= mouse[0] <= 300 + width) and (395 <= mouse[1] <= 395 + height):
+                return
         pygame.display.flip()
         clock.tick(FPS)
 
+
+def game():
+    pygame.quit()
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -70,10 +91,77 @@ class Landing(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 1)
 
 
+class Button:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.inactive_color = (0, 138, 181)
+        self.active_color = (0, 196, 255)
+        self.end = 0
+
+    def draw(self, x, y, action=None, font_size=80):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if (x <= mouse[0] <= x + self.width) and (y <= mouse[1] <= y + self.height):
+            pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
+
+            if click[0] == 1 and action is not None:
+                action()
+                self.end = 1
+
+        else:
+            pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
+        if self.end == 0:
+            print_text('Start Game', x + 10, y + 10)
+
+
+class Button2:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.inactive_color = (0, 138, 181)
+        self.active_color = (0, 196, 255)
+
+    def draw(self, x, y, action=None):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if (x <= mouse[0] <= x + self.width) and (y <= mouse[1] <= y + self.height):
+            pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
+
+            if click[0] == 1 and action is not None:
+                action()
+
+        else:
+            pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
+        print_text('Settings', x + 50, y + 10)
+
+
+class Button3:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.inactive_color = (0, 138, 181)
+        self.active_color = (0, 196, 255)
+
+    def draw(self, x, y, action=None):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if (x <= mouse[0] <= x + self.width) and (y <= mouse[1] <= y + self.height):
+            pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
+
+            if click[0] == 1 and action is not None:
+                action()
+
+        else:
+            pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
+
+        print_text('About', x + 90, y + 10)
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Свой курсор мыши')
-    size = WIDTH , HEIGHT
+    size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
 
@@ -84,11 +172,12 @@ if __name__ == '__main__':
     y = 0
     # создадим спрайт
     # добавим спрайт в группу
+    n = 0
     mountain = Mountain()
-    n = 1
-    while n == 1:
-        start_screen()
     while running:
+        if n == 0:
+            start_screen()
+        n = 1
         screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
