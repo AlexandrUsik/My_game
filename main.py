@@ -60,37 +60,6 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Mountain(pygame.sprite.Sprite):
-    image = load_image("mountains.png")
-
-    def __init__(self):
-        super().__init__(all_sprites)
-        self.image = Mountain.image
-        self.rect = self.image.get_rect()
-        # вычисляем маску для эффективного сравнения
-        self.mask = pygame.mask.from_surface(self.image)
-        # располагаем горы внизу
-        self.rect.bottom = HEIGHT
-
-
-class Landing(pygame.sprite.Sprite):
-    image = load_image("pt.png")
-
-    def __init__(self, pos):
-        super().__init__(all_sprites)
-        self.image = Landing.image
-        self.rect = self.image.get_rect()
-        # вычисляем маску для эффективного сравнения
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = pos[0]
-        self.rect.y = pos[1]
-
-    def update(self):
-        # если ещё в небе
-        if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 1)
-
-
 class Button:
     def __init__(self, width, height):
         self.width = width
@@ -158,6 +127,58 @@ class Button3:
         print_text('About', x + 90, y + 10)
 
 
+class Hero(pygame.sprite.Sprite):
+    image = load_image("stand.png")
+    image = pygame.transform.scale(image, (100, 200))
+
+    def __init__(self, *group):
+        # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
+        # Это очень важно!!!
+        super().__init__(*group)
+        self.image = Hero.image
+        self.rect = self.image.get_rect()
+        self.rect.x = WIDTH / 2
+        self.rect.y = HEIGHT - 200
+        self.x = 0
+        self.y = 0
+        self.image = pygame.transform.flip(self.image, True, False)
+
+    def update(self):
+        self.rect = self.rect.move(self.x,
+                                   self.y)
+
+    def move(self, x, y):
+        self.x = x
+        self.y = y
+        if (self.rect.y + 200 >= HEIGHT) and (self.y > 1):
+            print(self.rect.y + 200)
+            print(HEIGHT)
+            self.y = 0
+
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, sheet, columns, rows, x, y):
+        super().__init__(all_sprites)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(300, 800, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Свой курсор мыши')
@@ -173,20 +194,29 @@ if __name__ == '__main__':
     # создадим спрайт
     # добавим спрайт в группу
     n = 0
-    mountain = Mountain()
+    hero = Hero(all_sprites)
     while running:
         if n == 0:
             start_screen()
         n = 1
         screen.fill((0, 0, 0))
+        fon = pygame.transform.scale(load_image('fon_of_game.jpg'), (WIDTH, HEIGHT))
+        screen.blit(fon, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 y = 1
                 break
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                Landing(event.pos)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    hero.move(-5, 0)
+                elif event.key == pygame.K_RIGHT:
+                    hero.move(5, 0)
+                elif event.key == pygame.K_UP:
+                    hero.move(0, -5)
+                elif event.key == pygame.K_DOWN:
+                    hero.move(0, 5)
         if y == 1:
             break
         all_sprites.draw(screen)
