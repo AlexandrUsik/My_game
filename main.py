@@ -4,7 +4,7 @@ import sys
 import pygame
 import random
 
-FPS = 144
+FPS = 60
 WIDTH = 998
 HEIGHT = 1200
 
@@ -49,6 +49,7 @@ def start_screen():
 
 def game():
     pygame.quit()
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -138,45 +139,77 @@ class Hero(pygame.sprite.Sprite):
         self.image = Hero.image
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH / 2
-        self.rect.y = HEIGHT - 200
+        self.direction = 'LEFT'
+        self.stand = True
+        self.rect.y = HEIGHT - 170
         self.x = 0
         self.y = 0
         self.image = pygame.transform.flip(self.image, True, False)
 
     def update(self):
+        if (self.rect.y + 200 >= HEIGHT + 30) and (self.y > 1):
+            self.y = 0
+        elif (self.rect.x + 100 >= WIDTH) and (self.x > 1):
+            self.x = 0
+        elif (self.rect.x <= 0) and (self.x < 1):
+            self.x = 0
         self.rect = self.rect.move(self.x,
                                    self.y)
+        self.gravity()
+        if self.y == 0 and not self.stand:
+            self.x = 0
 
     def move(self, x, y):
-        self.x = x
-        self.y = y
-        if (self.rect.y + 200 >= HEIGHT) and (self.y > 1):
-            print(self.rect.y + 200)
-            print(HEIGHT)
-            self.y = 0
+        self.was = self.x
+        if x != -1:
+            self.x = x
+        if y != -1:
+            self.y = y
+            self.stand = False
+        elif y == -1 and self.rect.y >= HEIGHT - 190:
+            self.stand = True
+        if (self.x > 0) and (self.was <= 0) and self.direction != 'RIGHT':
+            self.image = pygame.transform.flip(self.image, True, False)
+            self.direction = 'RIGHT'
+        elif (self.x < 0) and (self.was >= 0) and self.direction != 'LEFT':
+            self.image = pygame.transform.flip(self.image, True, False)
+            self.direction = 'LEFT'
+
+    def gravity(self):
+        if self.y > 15 and self.y > 9 and self.rect.y >= HEIGHT - 190:
+            self.y = -10
+        elif self.y > -3 and self.y != 0:
+            self.y += 0.5
+        elif self.y < 0:
+            self.y += 0.2
 
 
-class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y):
+class Platform(pygame.sprite.Sprite):
+    image = load_image("platform.png")
+    max_x = WIDTH - 60
+    max_y = HEIGHT - 50
+    min_x = 10
+    min_y = HEIGHT - 150
+    list_of_min_y = []
+    list_of_max_y = []
+
+    def __init__(self, *group):
+        # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
+        # Это очень важно!!!
+        super().__init__(*group)
         super().__init__(all_sprites)
-        self.frames = []
-        self.cut_sheet(sheet, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = self.rect.move(x, y)
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(300, 800, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location, self.rect.size)))
-
-    def update(self):
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        if Platform.min_y not in Platform.list_of_min_y:
+            Platform.list_of_min_y.append(Platform.min_y)
+        else:
+            Platform.min_y -= 100
+        if Platform.max_y not in Platform.list_of_max_y:
+            Platform.list_of_max_y.append(Platform.max_y)
+        else:
+            Platform.max_y -= 100
+        self.rect.x = random.randint(Platform.min_x, Platform.max_x)
+        self.rect.y = random.randint(Platform.min_y, Platform.max_y)
 
 
 if __name__ == '__main__':
@@ -190,11 +223,15 @@ if __name__ == '__main__':
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
+    hero = pygame.sprite.Sprite()
     y = 0
     # создадим спрайт
     # добавим спрайт в группу
     n = 0
+    button_up_down = 0
     hero = Hero(all_sprites)
+    for _ in range(15):
+        Platform(all_sprites)
     while running:
         if n == 0:
             start_screen()
@@ -210,17 +247,16 @@ if __name__ == '__main__':
                 break
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    hero.move(-5, 0)
+                    hero.move(-10, -1)
                 elif event.key == pygame.K_RIGHT:
-                    hero.move(5, 0)
-                elif event.key == pygame.K_UP:
-                    hero.move(0, -5)
-                elif event.key == pygame.K_DOWN:
-                    hero.move(0, 5)
+                    hero.move(10, -1)
+                elif event.key == pygame.K_UP and button_up_down == 0:
+                    hero.move(-1, -10)
+                    button_up_down = 1
         if y == 1:
             break
         all_sprites.draw(screen)
         all_sprites.update()
         pygame.display.flip()
-        clock.tick(144)
+        clock.tick(FPS)
     pygame.quit()
