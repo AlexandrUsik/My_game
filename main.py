@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 import pygame
@@ -131,6 +130,9 @@ class Button3:
 class Hero(pygame.sprite.Sprite):
     image = load_image("stand.png")
     image = pygame.transform.scale(image, (100, 200))
+    jump_up = True
+    y_of_hero = 0
+    God_mod = 1
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
@@ -140,6 +142,7 @@ class Hero(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH / 2
         self.direction = 'LEFT'
+        self.mask = pygame.mask.from_surface(self.image)
         self.stand = True
         self.rect.y = HEIGHT - 170
         self.x = 0
@@ -149,6 +152,7 @@ class Hero(pygame.sprite.Sprite):
     def update(self):
         if (self.rect.y + 200 >= HEIGHT + 30) and (self.y > 1):
             self.y = 0
+            Hero.jump_up = False
         elif (self.rect.x + 100 >= WIDTH) and (self.x > 1):
             self.x = 0
         elif (self.rect.x <= 0) and (self.x < 1):
@@ -158,6 +162,8 @@ class Hero(pygame.sprite.Sprite):
         self.gravity()
         if self.y == 0 and not self.stand:
             self.x = 0
+        Hero.y_of_hero = self.rect.y
+        print(Hero.y_of_hero)
 
     def move(self, x, y):
         self.was = self.x
@@ -178,38 +184,100 @@ class Hero(pygame.sprite.Sprite):
     def gravity(self):
         if self.y > 15 and self.y > 9 and self.rect.y >= HEIGHT - 190:
             self.y = -10
+            Hero.jump_up = False
         elif self.y > -3 and self.y != 0:
-            self.y += 0.5
+            self.y += 0.6
+            Hero.jump_up = True
         elif self.y < 0:
             self.y += 0.2
+            Hero.jump_up = True
+        if self.y > 7:
+            Hero.jump_up = False
+
+    def broadcast(self, n):
+        self.y = n
 
 
 class Platform(pygame.sprite.Sprite):
     image = load_image("platform.png")
-    max_x = WIDTH - 60
-    max_y = HEIGHT - 50
-    min_x = 10
-    min_y = HEIGHT - 150
-    list_of_min_y = []
-    list_of_max_y = []
+    min_y = 1050
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
         # Это очень важно!!!
         super().__init__(*group)
-        super().__init__(all_sprites)
+        self.down = 0
+        self.image = Platform.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        if Platform.min_y not in Platform.list_of_min_y:
-            Platform.list_of_min_y.append(Platform.min_y)
-        else:
-            Platform.min_y -= 100
-        if Platform.max_y not in Platform.list_of_max_y:
-            Platform.list_of_max_y.append(Platform.max_y)
-        else:
-            Platform.max_y -= 100
-        self.rect.x = random.randint(Platform.min_x, Platform.max_x)
-        self.rect.y = random.randint(Platform.min_y, Platform.max_y)
+        self.rect.x = random.randrange(WIDTH - 100)
+        self.rect.y = Platform.min_y
+        Platform.min_y -= 100
+
+    def update(self):
+        if pygame.sprite.collide_mask(self, hero) and not Hero.jump_up:
+            hero.broadcast(-10)
+            if hero.y_of_hero < 800:
+                first_plat.rect.y += 100
+                first_plat.rect.x = random.randrange(WIDTH - 100)
+
+                second_plat.rect.y += 100
+                second_plat.rect.x = random.randrange(WIDTH - 100)
+
+                third_plat.rect.y += 100
+                third_plat.rect.x = random.randrange(WIDTH - 100)
+
+                fourth_plat.rect.y += 100
+                fourth_plat.rect.x = random.randrange(WIDTH - 100)
+
+                fifth_plat.rect.y += 100
+                fifth_plat.rect.x = random.randrange(WIDTH - 100)
+
+                six_plat.rect.y += 100
+                six_plat.rect.x = random.randrange(WIDTH - 100)
+
+                seven_plat.rect.y += 100
+                seven_plat.rect.x = random.randrange(WIDTH - 100)
+
+                eight_plat.rect.y += 100
+                eight_plat.rect.x = random.randrange(WIDTH - 100)
+
+                nine_plat.rect.y += 100
+                nine_plat.rect.x = random.randrange(WIDTH - 100)
+
+                ten_plat.rect.y += 100
+                ten_plat.rect.x = random.randrange(WIDTH - 100)
+
+            if hero.y_of_hero < 500:
+                first_plat.rect.y += 150
+                second_plat.rect.y += 150
+                third_plat.rect.y += 150
+                fourth_plat.rect.y += 150
+                fifth_plat.rect.y += 150
+                six_plat.rect.y += 150
+                seven_plat.rect.y += 150
+                eight_plat.rect.y += 150
+                nine_plat.rect.y += 150
+                ten_plat.rect.y += 150
+            if first_plat.rect.y > 1050:
+                first_plat.rect.y = 10
+            if second_plat.rect.y > 1050:
+                second_plat.rect.y = 10
+            if third_plat.rect.y > 1050:
+                third_plat.rect.y = 10
+            if fourth_plat.rect.y > 1050:
+                fourth_plat.rect.y = 10
+            if fifth_plat.rect.y > 1050:
+                fifth_plat.rect.y = 10
+            if six_plat.rect.y > 1050:
+                six_plat.rect.y = 10
+            if seven_plat.rect.y > 1050:
+                seven_plat.rect.y = 10
+            if eight_plat.rect.y > 1050:
+                eight_plat.rect.y = 10
+            if nine_plat.rect.y > 1050:
+                nine_plat.rect.y = 10
+            if ten_plat.rect.y > 1050:
+                ten_plat.rect.y = 10
 
 
 if __name__ == '__main__':
@@ -221,8 +289,7 @@ if __name__ == '__main__':
 
     running = True
     all_sprites = pygame.sprite.Group()
-    horizontal_borders = pygame.sprite.Group()
-    vertical_borders = pygame.sprite.Group()
+    platforms_all = pygame.sprite.Group()
     hero = pygame.sprite.Sprite()
     y = 0
     # создадим спрайт
@@ -230,8 +297,16 @@ if __name__ == '__main__':
     n = 0
     button_up_down = 0
     hero = Hero(all_sprites)
-    for _ in range(15):
-        Platform(all_sprites)
+    first_plat = Platform(platforms_all)
+    second_plat = Platform(platforms_all)
+    third_plat = Platform(platforms_all)
+    fourth_plat = Platform(platforms_all)
+    fifth_plat = Platform(platforms_all)
+    six_plat = Platform(platforms_all)
+    seven_plat = Platform(platforms_all)
+    eight_plat = Platform(platforms_all)
+    nine_plat = Platform(platforms_all)
+    ten_plat = Platform(platforms_all)
     while running:
         if n == 0:
             start_screen()
@@ -253,10 +328,13 @@ if __name__ == '__main__':
                 elif event.key == pygame.K_UP and button_up_down == 0:
                     hero.move(-1, -10)
                     button_up_down = 1
+        print_text('Start Game', WIDTH + 10, HEIGHT + 10)
         if y == 1:
             break
         all_sprites.draw(screen)
         all_sprites.update()
+        platforms_all.draw(screen)
+        platforms_all.update()
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
