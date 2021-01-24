@@ -3,9 +3,10 @@ import sys
 import pygame
 import random
 
-FPS = 60
+FPS = 144
 WIDTH = 998
 HEIGHT = 1200
+SHOP = 0
 
 
 def print_text(message, x, y, font_color=(0, 0, 0), font_type='impact.ttf', font_size=80):
@@ -17,6 +18,18 @@ def print_text(message, x, y, font_color=(0, 0, 0), font_type='impact.ttf', font
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def restart():
+    Hero.God_mod = 1
+    Platform.count_of_jump = 0
+    Button_Of_Restart.restart1 = 1
+    image_of_hero.image = load_image("stand.png")
+    image_of_hero.image = pygame.transform.scale(image_of_hero.image, (100, 200))
+    if Hero.direction == 'RIGHT':
+        image_of_hero.image = pygame.transform.flip(image_of_hero.image, False, False)
+    else:
+        image_of_hero.image = pygame.transform.flip(image_of_hero.image, True, False)
 
 
 def start_screen():
@@ -102,7 +115,7 @@ class Button2:
 
         else:
             pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
-        print_text('Settings', x + 50, y + 10)
+        print_text('Shop', x + 110, y + 10)
 
 
 class Button3:
@@ -128,6 +141,8 @@ class Button3:
 
 
 class Button_Of_Restart:
+    restart1 = 0
+
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -157,6 +172,7 @@ class Hero(pygame.sprite.Sprite):
     y_of_hero = 0
     God_mod = 1
     jump_to_up = True
+    direction = 'LEFT'
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
@@ -197,6 +213,7 @@ class Hero(pygame.sprite.Sprite):
             self.x = 0
             self.y = 0
             image_of_hero.filled(self.y, self.x, self.direction, self.rect.x, self.rect.y)
+        Hero.direction = self.direction
 
     def move(self, x, y):
         self.was = self.x
@@ -226,6 +243,8 @@ class Hero(pygame.sprite.Sprite):
             Hero.jump_up = True
         if self.y > 7:
             Hero.jump_up = False
+            self.y += 0.2
+        if hero.y_of_hero < 500:
             self.y += 0.2
         if self.y <= 0:
             Hero.jump_to_up = True
@@ -258,7 +277,9 @@ class Platform(pygame.sprite.Sprite):
             hero.broadcast(-10)
             Hero.God_mod = 0
             Platform.count_of_jump += 1
-        if hero.y_of_hero < 600 and Hero.jump_to_up:
+        if hero.y_of_hero < 500 and Hero.jump_up:
+            Platform.count_jj = 8
+        elif hero.y_of_hero < 600 and Hero.jump_up:
             Platform.count_jj = 5
         else:
             Platform.count_jj = 0
@@ -371,22 +392,25 @@ class Endgame(pygame.sprite.Sprite):
         self.y = 0
 
     def update(self):
-        if self.rect.y <= - 200:
-            self.rect = self.rect.move(0,
-                                       5)
-        elif self.rect.y <= - 100:
-            self.rect = self.rect.move(0,
-                                       3)
-        elif self.rect.y <= 0:
-            self.rect = self.rect.move(0,
-                                       2)
-        elif self.rect.y <= 300:
-            self.rect = self.rect.move(0,
-                                       0)
-            print_text('Количество прыжков', 410, 70, (255, 255, 255,), 'impact.ttf', 20)
-            print_text(f'{Platform.count_of_jump}', 410, 110, (255, 255, 255,), 'impact.ttf', 20)
-            button = Button_Of_Restart(100, 50)
-            button.draw(WIDTH / 2 - 50, 300)
+        if Hero.God_mod == -1:
+            if self.rect.y <= - 200:
+                self.rect = self.rect.move(0,
+                                           5)
+            elif self.rect.y <= - 100:
+                self.rect = self.rect.move(0,
+                                           3)
+            elif self.rect.y <= 0:
+                self.rect = self.rect.move(0,
+                                           2)
+            elif self.rect.y <= 300:
+                self.rect = self.rect.move(0,
+                                           0)
+                print_text('Количество прыжков', 410, 70, (255, 255, 255,), 'impact.ttf', 20)
+                print_text(f'{Platform.count_of_jump}', 410, 110, (255, 255, 255,), 'impact.ttf', 20)
+                button = Button_Of_Restart(100, 50)
+                button.draw(WIDTH / 2 - 50, 300, restart)
+        else:
+            pass
 
 
 if __name__ == '__main__':
@@ -447,8 +471,13 @@ if __name__ == '__main__':
         if Hero.God_mod != -1:
             print_text(f'Count: {Platform.count_of_jump}', 10, 20, (255, 255, 255,), 'impact.ttf', 40)
         elif sprite_of_end == 0:
-            endgame = Endgame(all_sprites)
+            endgame = Endgame(endgame_sprite)
             sprite_of_end = 1
+        if Button_Of_Restart.restart1 == 1:
+            endgame.kill()
+            button_up_down = 0
+            sprite_of_end = 0
+            Button_Of_Restart.restart1 = 0
         if y == 1:
             break
         if Hero.God_mod != -1:
@@ -457,6 +486,8 @@ if __name__ == '__main__':
             platforms_all.draw(screen)
             platforms_all.update()
         else:
+            endgame_sprite.draw(screen)
+            endgame_sprite.update()
             all_sprites.draw(screen)
             all_sprites.update()
         pygame.display.flip()
