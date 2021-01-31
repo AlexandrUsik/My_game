@@ -5,7 +5,7 @@ import random
 
 FPS = 144
 WIDTH = 998
-HEIGHT = 1200
+HEIGHT = 800
 SHOP = 0
 
 
@@ -39,21 +39,21 @@ def start_screen():
     height = 113
 
     while True:
-        button = Button(376, 113)
-        button.draw(300, 395, game)
+        button = Button(376, 100)
+        button.draw(300, 240, game)
 
-        button2 = Button2(376, 113)
-        button2.draw(300, 620)
+        button2 = Button2(376, 100)
+        button2.draw(300, 400)
 
-        button3 = Button3(376, 113)
-        button3.draw(300, 879)
+        button3 = Button3(376, 100)
+        button3.draw(300, 585)
         mouse = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
                 return  # начинаем игру
             if event.type == pygame.MOUSEBUTTONDOWN and \
-                    (300 <= mouse[0] <= 300 + width) and (395 <= mouse[1] <= 395 + height):
+                    (300 <= mouse[0] <= 300 + width) and (240 <= mouse[1] <= 240 + height):
                 return
         pygame.display.flip()
         clock.tick(FPS)
@@ -207,7 +207,7 @@ class Hero(pygame.sprite.Sprite):
             if self.y == 0 and not self.stand:
                 self.x = 0
             Hero.y_of_hero = self.rect.y
-            if Hero.God_mod == 0 and Hero.y_of_hero >= 1010:
+            if Hero.God_mod == 0 and Hero.y_of_hero >= 594:
                 Hero.God_mod = -1
         elif Hero.God_mod == -1:
             self.x = 0
@@ -244,7 +244,7 @@ class Hero(pygame.sprite.Sprite):
         if self.y > 7:
             Hero.jump_up = False
             self.y += 0.2
-        if hero.y_of_hero < 500:
+        if hero.y_of_hero < 400:
             self.y += 0.2
         if self.y <= 0:
             Hero.jump_to_up = True
@@ -257,7 +257,7 @@ class Hero(pygame.sprite.Sprite):
 
 class Platform(pygame.sprite.Sprite):
     image = load_image("platform.png")
-    min_y = 1050
+    min_y = 700
     count_jj = 0
     count_of_jump = 0
 
@@ -277,32 +277,42 @@ class Platform(pygame.sprite.Sprite):
             hero.broadcast(-10)
             Hero.God_mod = 0
             Platform.count_of_jump += 1
-        if hero.y_of_hero < 500 and Hero.jump_up:
-            Platform.count_jj = 8
-        elif hero.y_of_hero < 600 and Hero.jump_up:
-            Platform.count_jj = 5
+        if hero.y_of_hero < 300 and Hero.jump_up:
+            Platform.count_jj = 7
+        elif hero.y_of_hero < 390 and Hero.jump_up:
+            Platform.count_jj = 4
         else:
             Platform.count_jj = 0
-        if first_plat.rect.y > 1050:
+        if first_plat.rect.y > 730:
             first_plat.rect.y = 150
-        if second_plat.rect.y > 1050:
+            first_plat.rect.x = random.randrange(WIDTH - 100)
+        if second_plat.rect.y > 730:
             second_plat.rect.y = 150
-        if third_plat.rect.y > 1050:
+            second_plat.rect.x = random.randrange(WIDTH - 100)
+        if third_plat.rect.y > 730:
             third_plat.rect.y = 150
-        if fourth_plat.rect.y > 1050:
+            third_plat.rect.x = random.randrange(WIDTH - 100)
+        if fourth_plat.rect.y > 730:
             fourth_plat.rect.y = 150
-        if fifth_plat.rect.y > 1050:
+            fourth_plat.rect.x = random.randrange(WIDTH - 100)
+        if fifth_plat.rect.y > 730:
             fifth_plat.rect.y = 150
-        if six_plat.rect.y > 1050:
+            fifth_plat.rect.x = random.randrange(WIDTH - 100)
+        if six_plat.rect.y > 730:
             six_plat.rect.y = 150
-        if seven_plat.rect.y > 1050:
+            six_plat.rect.x = random.randrange(WIDTH - 100)
+        if seven_plat.rect.y > 730:
             seven_plat.rect.y = 150
-        if eight_plat.rect.y > 1050:
+            seven_plat.rect.x = random.randrange(WIDTH - 100)
+        if eight_plat.rect.y > 730:
             eight_plat.rect.y = 150
-        if nine_plat.rect.y > 1050:
+            eight_plat.rect.x = random.randrange(WIDTH - 100)
+        if nine_plat.rect.y > 730:
             nine_plat.rect.y = 150
-        if ten_plat.rect.y > 1050:
+            nine_plat.rect.x = random.randrange(WIDTH - 100)
+        if ten_plat.rect.y > 730:
             ten_plat.rect.y = 150
+            ten_plat.rect.x = random.randrange(WIDTH - 100)
         self.rect = self.rect.move(0, Platform.count_jj)
 
 
